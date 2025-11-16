@@ -1,0 +1,8 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Build artifacts
+build/
+dist/
+*.spec

@@ -1,0 +1,58 @@
+heading:
+  title: "Scaffoldr - Borgmatic Configuration Wizard"
+  before:
+    - title: "Backup Source"
+      subtitle: "Specify the source data and metadata for this backup set."
+      prompts:
+        - key: backup_name
+          prompt: "Backup set name"
+        - key: source_directory
+          prompt: "Source directory absolute path"
+        - key: exclude_patterns
+          prompt: "Comma-separated exclude patterns (optional)"
+          is_list: true
+    - title: "Backup Repository"
+      subtitle: "Configure the location and access details for the backup repository."
+      prompts:
+        - key: repository_path
+          prompt: "Repository URI"
+        - key: remote_path
+          prompt: "Remote Borg executable path"
+          default: "borg"
+        - key: encryption_passphrase
+          prompt: "Repository encryption passphrase"
+          is_password: true
+    - title: "Archiving and Retention Policy"
+      subtitle: "Define archive naming conventions and the retention policy for your backups."
+      prompts:
+        - key: archive_name_format
+          prompt: "Archive name format prefix"
+          default: "{{ backup_name }}"
+        - key: retention_hourly
+          prompt: "Hourly archives to retain (0 to disable)"
+          default: '0'
+        - key: retention_daily
+          prompt: "Daily archives to retain"
+          default: '7'
+        - key: retention_weekly
+          prompt: "Weekly archives to retain"
+          default: '4'
+        - key: retention_monthly
+          prompt: "Monthly archives to retain"
+          default: '6'
+        - key: retention_yearly
+          prompt: "Yearly archives to retain"
+          default: '1'
+    - title: "Repository Maintenance"
+      subtitle: "Configure repository maintenance and integrity checks."
+      prompts:
+        - key: consistency_checks
+          prompt: "Consistency checks (e.g., repository, archives)"
+          default: "repository,archives"
+          is_list: true
+  after:
+    logs:
+      success: "Borgmatic configuration successfully generated at {output_path}"
+      error: "Failed to generate configuration: {e}"
+    notes:
+      - "Action required: Initialize the Borg repository before running the first backup.\nExample: borg init {encryption_arg} --remote-path={remote_path} {repository_path}"

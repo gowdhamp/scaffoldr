@@ -1,0 +1,54 @@
+heading:
+  title: "Scaffoldr - Autorestic Configuration Wizard"
+  before:
+    - title: "Location"
+      subtitle: "Define the backup source and destination."
+      prompts:
+        - key: location_name
+          prompt: "Backup location name"
+        - key: location_from
+          prompt: "Source directory absolute path"
+        - key: location_to
+          prompt: "Backend storage name"
+          default: "s3"
+
+    - title: "Hooks"
+      subtitle: "Define commands to run at different stages of the backup process (optional)."
+      prompts:
+        - key: hook_before
+          prompt: "Command before backup"
+        - key: hook_success
+          prompt: "Command after successful backup"
+        - key: hook_failure
+          prompt: "Command after failed backup"
+
+    - title: "Backend"
+      subtitle: "Configure the storage backend details."
+      prompts:
+        - key: backend_name
+          prompt: "Backend name"
+          default: "{{ location_to }}"
+        - key: backend_type
+          prompt: "Backend type (s3, local)"
+          choices: ["s3", "local"]
+          default: "s3"
+        - key: backend_path
+          prompt: "Backend repository path (URL for S3, local path)"
+        - key: backend_env_aws_access_key_id
+          prompt: "AWS Access Key ID"
+          depends_on:
+            key: backend_type
+            value: "s3"
+        - key: backend_env_aws_secret_access_key
+          prompt: "AWS Secret Access Key"
+          is_password: true
+          depends_on:
+            key: backend_type
+            value: "s3"
+        - key: backend_key
+          prompt: "Repository encryption key"
+          is_password: true
+  after:
+    logs:
+      success: "Successfully created autorestic.yml at {output_path}"
+      error: "Error creating file: {e}"
