@@ -1,6 +1,7 @@
 # Scaffoldr
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Release](https://github.com/gowdhamp/scaffoldr/actions/workflows/release.yml/badge.svg)
 
 **Scaffoldr is a fast and simple CLI tool for instantly generating configuration files and boilerplates for your favorite DevOps and infrastructure tools.**
 

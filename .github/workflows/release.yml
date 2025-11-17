@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             arch: x86_64
             name: scaffoldr-linux-x86_64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             arch: arm64
             name: scaffoldr-linux-arm64
 
