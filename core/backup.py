@@ -1,4 +1,5 @@
 import os
+import sys
 from typer import Typer, Exit
 from rich.console import Console
 from rich.prompt import Prompt
@@ -12,16 +13,27 @@ app = Typer(help="Scaffold backup configurations for various tools.")
 CONFIG_WIZARD_TITLE = "Scaffoldr - {tool_name} Configuration Wizard"
 
 
+def get_resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+    return os.path.join(base_path, relative_path)
+
+
 def _create_config_flow(tool_name: str, default_filename: str):
     """Generic function to handle the interactive configuration creation process."""
     try:
-        prompt_file_path = os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "definitions",
-            "backup",
-            tool_name.lower(),
-            f"{tool_name.lower()}.yaml",
+        prompt_file_path = get_resource_path(
+            os.path.join(
+                "definitions",
+                "backup",
+                tool_name.lower(),
+                f"{tool_name.lower()}.yaml",
+            )
         )
         prompts = load_prompts_from_yaml(prompt_file_path)
         if not prompts:
