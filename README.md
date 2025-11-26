@@ -2,6 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Release](https://github.com/gowdhamp/scaffoldr/actions/workflows/release.yml/badge.svg)
+![GitHub Release](https://img.shields.io/github/v/release/gowdhamp/scaffoldr)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gowdhamp/scaffoldr/total)
+
 
 **Scaffoldr is a fast and simple CLI tool for instantly generating configuration files and boilerplates for your favorite DevOps and infrastructure tools.**
 
@@ -22,6 +25,12 @@ Scaffoldr solves this problem by providing an interactive command-line interface
 
 ## Getting Started
 
+### Run directly
+
+```sh
+wget -O - https://github.com/gowdhamp/scaffoldr/releases/latest/download/scaffoldr-linux-x86_64 | bash
+```
+
 ### Installation
 
 Scaffoldr is distributed as a single binary, making installation quick and easy.
@@ -30,7 +39,7 @@ Scaffoldr is distributed as a single binary, making installation quick and easy.
 2.  Place the binary in a directory included in your system's `PATH` (e.g., `/usr/local/bin` on Linux/macOS).
 3.  Make the binary executable:
     ```sh
-    chmod +x /path/to/your/scaffoldr
+    chmod 755 /usr/local/bin/scaffoldr
     ```
 
 ## Usage
