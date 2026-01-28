@@ -28,7 +28,7 @@ Scaffoldr solves this problem by providing an interactive command-line interface
 ### Run directly
 
 ```sh
-wget -O - https://github.com/gowdhamp/scaffoldr/releases/latest/download/scaffoldr-linux-x86_64 | bash
+curl -sSL https://raw.githubusercontent.com/gowdhamp/scaffoldr/main/scripts/install.sh | bash
 ```
 
 ### Installation
