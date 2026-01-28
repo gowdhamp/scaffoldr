@@ -1,75 +1,66 @@
-#!/opt/quark/bin/python
+#!/usr/bin/env python3
 """
 Main entry point for the Scaffoldr CLI application.
 
-This script initializes the Typer application and registers all the command
-groups (subcommands) from the 'core' modules.
+Scaffoldr is a fast and simple CLI tool for instantly generating configuration
+files and boilerplates for your favorite DevOps and infrastructure tools.
 """
 
 from typing import Optional
-
 from typer import Typer, Exit, Option, Context
 from rich.console import Console
+from core import discovery
 
-from core import backup
-
-# --- Constants ---
+# --- Meta-data ---
 APP_NAME = "Scaffoldr"
-__version__ = "1.0.0"
+VERSION = "1.1.0"
 
-# --- Initial Setup ---
+# --- Globals ---
 console = Console()
+
+# --- App Definition ---
 app = Typer(
     name=APP_NAME,
-    help="A CLI tool to quickly scaffold configuration files for DevOps tools.",
+    help="[bold cyan]Scaffoldr[/bold cyan]: Your friendly configuration file generator.",
     add_completion=False,
     rich_markup_mode="rich",
+    no_args_is_help=True,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 
-# --- Helper Functions ---
-
 
 def _version_callback(value: bool):
-    """Callback function to display the application version and exit."""
+    """Prints the version number and exits if the flag is set."""
     if value:
-        console.print(
-            f"[bold green]{APP_NAME}[/bold green] version [cyan]{__version__}[/cyan]"
-        )
+        console.print(f"[bold green]{APP_NAME}[/bold green] v[cyan]{VERSION}[/cyan]")
         raise Exit()
 
 
-# --- Main Application ---
-
-
 @app.callback(invoke_without_command=True)
-def main(
+def root_callback(
     ctx: Context,
     version: Optional[bool] = Option(
         None,
         "--version",
         "-v",
-        help="Show the application version and exit.",
+        help="Show version information and exit.",
         callback=_version_callback,
         is_eager=True,
     ),
 ):
-    """Scaffoldr: Your friendly configuration file generator."""
-    if ctx.invoked_subcommand is None:
-        console.print(ctx.get_help())
-        raise Exit(0)
+    """
+    Welcome to Scaffoldr! Use the subcommands below to start scaffolding.
+    """
+    # no_args_is_help=True takes care of showing the help screen.
+    pass
 
 
-# --- Command Registration ---
+def register_cli_commands():
+    """Registers dynamic subcommands based on the tools discovery engine."""
+    discovery.register_dynamic_commands(app)
 
-
-def register_commands():
-    """Registers all command groups (subcommands) to the main Typer app."""
-    backup.register_cli(app)
-
-
-# --- Execution ---
 
 if __name__ == "__main__":
-    register_commands()
+    # TODO: Implement a system-wide log level setting via global flag.
+    register_cli_commands()
     app()

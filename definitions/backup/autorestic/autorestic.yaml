@@ -5,49 +5,84 @@ heading:
       subtitle: "Define the backup source and destination."
       prompts:
         - key: location_name
-          prompt: "Backup location name"
+          prompt: "Location name"
+          description: "A friendly name for this data source (e.g., 'production-db')."
+          required: true
         - key: location_from
-          prompt: "Source directory absolute path"
+          prompt: "Source directory"
+          description: "The absolute path of the directory you want to back up."
+          required: true
         - key: location_to
-          prompt: "Backend storage name"
+          prompt: "Target Backend(s)"
+          description: "Comma-separated list of backend names to store backups."
           default: "s3"
 
     - title: "Hooks"
-      subtitle: "Define commands to run at different stages of the backup process (optional)."
+      subtitle: "Execute shell commands at specific lifecycle events (optional)."
       prompts:
         - key: hook_before
-          prompt: "Command before backup"
+          prompt: "Pre-backup command"
+          description: "Command to run before starting the backup (e.g., 'systemctl stop my-app')."
         - key: hook_success
-          prompt: "Command after successful backup"
+          prompt: "Success command"
+          description: "Command to run after a successful backup."
         - key: hook_failure
-          prompt: "Command after failed backup"
+          prompt: "Failure command"
+          description: "Command to run if the backup fails."
 
-    - title: "Backend"
-      subtitle: "Configure the storage backend details."
+    - title: "Backend Storage"
+      subtitle: "Configure where your backups will be physically stored."
       prompts:
         - key: backend_name
-          prompt: "Backend name"
+          prompt: "Backend identifier"
+          description: "A unique name for this storage backend (e.g., 'primary-s3')."
           default: "{{ location_to }}"
         - key: backend_type
-          prompt: "Backend type (s3, local)"
-          choices: ["s3", "local"]
+          prompt: "Backend type"
+          description: "The storage provider to use."
+          choices: ["s3", "local", "azure", "gs"]
           default: "s3"
         - key: backend_path
-          prompt: "Backend repository path (URL for S3, local path)"
+          prompt: "Repository path"
+          description: "The target destination (e.g., '/mnt/backup' or 'my-bucket/folder')."
         - key: backend_env_aws_access_key_id
           prompt: "AWS Access Key ID"
+          description: "Required for S3 backend."
           depends_on:
             key: backend_type
             value: "s3"
         - key: backend_env_aws_secret_access_key
           prompt: "AWS Secret Access Key"
+          description: "Required for S3 backend."
           is_password: true
           depends_on:
             key: backend_type
             value: "s3"
         - key: backend_key
-          prompt: "Repository encryption key"
+          prompt: "Encryption key"
+          description: "Passphrase for Restic repository encryption."
           is_password: true
+
+    - title: "Retention Strategy (Forget)"
+      subtitle: "Define how many snapshots to keep for this location (optional)."
+      prompts:
+        - key: forget_keep_last
+          prompt: "Keep last X snapshots"
+          description: "Number of most recent snapshots to keep."
+          default: '10'
+        - key: forget_keep_daily
+          prompt: "Keep daily"
+          description: "Number of daily snapshots to keep."
+          default: '7'
+        - key: forget_keep_weekly
+          prompt: "Keep weekly"
+          description: "Number of weekly snapshots to keep."
+          default: '4'
+        - key: forget_keep_monthly
+          prompt: "Keep monthly"
+          description: "Number of monthly snapshots to keep."
+          default: '6'
+
   after:
     logs:
       success: "Successfully created autorestic.yml at {output_path}"

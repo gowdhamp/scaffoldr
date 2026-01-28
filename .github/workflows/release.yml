@@ -21,16 +21,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Set up QEMU
         if: matrix.arch == 'arm64'
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Build Scaffoldr 
         run: |
-          pyinstaller --onefile --name ${{ matrix.name }} --add-data 'definitions:definitions' main.py
+          pyinstaller --onefile --name ${{ matrix.name }} --add-data "definitions$(python3 -c 'import os; print(os.pathsep)')definitions" main.py
 
       - name: Upload binary as artifact
         uses: actions/upload-artifact@v4
@@ -57,47 +57,22 @@ jobs:
 
     permissions:
       contents: write
-
+    
     steps:
-      - name: Download x86_64 artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: scaffoldr-linux-x86_64
-          path: ./release/x86_64
+          path: ./artifacts
 
-      - name: Download arm64 artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: scaffoldr-linux-arm64
-          path: ./release/arm64
+      - name: Display structure of downloaded files
+        run: ls -R ./artifacts
 
       - name: Create Github Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: ${{ github.ref_name }}
+          files: ./artifacts/**/*
+          generate_release_notes: true
           draft: false
           prerelease: false
-
-      - name: Upload x86_64 binary to Release
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release/x86_64/scaffoldr-linux-x86_64
-          asset_name: scaffoldr-linux-x86_64
-          asset_content_type: application/octet-stream
-
-      - name: Upload ARM64 binary to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release/arm64/scaffoldr-linux-arm64
-          asset_name: scaffoldr-linux-arm64
-          asset_content_type: application/octet-stream

@@ -15,12 +15,8 @@ else
     exit 1
 fi
 
-if [ "$OS" = "darwin" ]; then
-    OS="darwin"
-elif [ "$OS" = "linux" ]; then
-    OS="linux"
-else
-    echo "Unsupported OS: $OS"
+if [ "$OS" != "linux" ]; then
+    echo "This tool currently only supports Linux. Detected OS: $OS"
     exit 1
 fi
 

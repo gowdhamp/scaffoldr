@@ -3,73 +3,82 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Release](https://github.com/gowdhamp/scaffoldr/actions/workflows/release.yml/badge.svg)
 ![GitHub Release](https://img.shields.io/github/v/release/gowdhamp/scaffoldr)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gowdhamp/scaffoldr/total)
-
+![GitHub Downloads](https://img.shields.io/github/downloads/gowdhamp/scaffoldr/total)
 
 **Scaffoldr is a fast and simple CLI tool for instantly generating configuration files and boilerplates for your favorite DevOps and infrastructure tools.**
 
-Stop searching for documentation and examples. With Scaffoldr, you can interactively generate validated and ready-to-use configuration files for tools like Borgmatic, Restic, and more, directly from your terminal.
+Stop searching for documentation and examples. With Scaffoldr, you can interactively generate validated and ready-to-use configuration files for tools like Borgmatic, Autorestic, and more, directly from your terminal.
 
-## Why Scaffoldr?
+## Core Features
 
-In the world of DevOps and infrastructure management, setting up new tools often involves a repetitive cycle of finding documentation, copying boilerplate code, and tweaking it to fit your needs. This process is slow and error-prone.
-
-Scaffoldr solves this problem by providing an interactive command-line interface that guides you through the process of creating configuration files. It uses pre-defined templates and prompts to ensure that you generate a complete and correct setup every time.
-
-### Features
-
-- **Interactive Generation**: Guides you through configuration with simple prompts.
-- **Backup Configuration**: Generates configuration for backup tools like Borgmatic and Autorestic.
-- **Validation**: Ensures required fields are present and correct.
-- **Single Binary**: Distributed as a single, dependency-free executable.
+- **🚀 Interactive Wizards**: Guide you through complex configurations with simple, descriptive prompts.
+- **🛠️ Hierarchical CLI**: Intuitive command structure: `scaffoldr <category> <tool> <action>`.
+- **📊 Field Discovery**: Use the `list` action to see all available configuration fields, their descriptions, and global defaults.
+- **⚙️ Global Configuration**: Set persistent defaults in `~/.scaffoldr` (TOML) to speed up your scaffolding process.
+- **✅ Smart Validation**: Ensures required fields are filled and values match expected patterns (regex).
+- **📦 Zero Dependencies**: Distributed as a single, portable binary for Linux (x86_64 & ARM64).
 
 ## Getting Started
 
-### Run directly
+### One-Line Install (Linux)
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/gowdhamp/scaffoldr/main/scripts/install.sh | bash
 ```
 
-### Installation
+### Manual Installation
 
-Scaffoldr is distributed as a single binary, making installation quick and easy.
-
-1.  Download the latest `scaffoldr` binary for your operating system from the [GitHub Releases](https://github.com/gowdhamp/scaffoldr/releases) page.
-2.  Place the binary in a directory included in your system's `PATH` (e.g., `/usr/local/bin` on Linux/macOS).
-3.  Make the binary executable:
-    ```sh
-    chmod 755 /usr/local/bin/scaffoldr
-    ```
+1.  Download the latest binary from the [GitHub Releases](https://github.com/gowdhamp/scaffoldr/releases).
+2.  Place it in your `PATH` (e.g., `/usr/local/bin`).
+3.  Make it executable: `chmod +x /usr/local/bin/scaffoldr`.
 
 ## Usage
 
-To use Scaffoldr, run the executable followed by the command for the tool you wish to configure.
+Scaffoldr uses a simple nested command structure. Running any command or category without arguments will display the help menu automatically.
 
+### Commands
 
-```sh
-scaffoldr -h
+Every tool supports two main actions:
+- `generate`: Start the interactive configuration wizard.
+- `list`: Show a table of all configuration fields and their current defaults.
+
+*Note: Running just the tool name (e.g., `scaffoldr backup borgmatic`) defaults to the `list` action.*
+
+### 💾 Global Defaults
+
+You can set global defaults in `~/.scaffoldr` to avoid re-typing common values:
+
+```toml
+[borgmatic]
+remote_path = "/usr/bin/borg"
+repository_path = "ssh://backup-server/./repo"
+
+[autorestic]
+backend_type = "s3"
 ```
 
-### Example: Create a Borgmatic Configuration
+## Examples
 
-To generate a `borgmatic.yaml` file, run the `create-borgmatic` subcommand and follow the interactive prompts.
-
+### 1. Explore Configuration Fields
+See what fields are required for a tool and what your current defaults are:
 ```sh
-scaffoldr backup create-borgmatic
+scaffoldr backup borgmatic list
 ```
 
-This will launch an interactive wizard that asks for repository paths, retention policies, and other necessary details, and then generates a complete `borgmatic.yaml` file for you.
-
-### Example: Create an Autorestic Configuration
-
-To generate an `autorestic.yaml` file, run the `create-autorestic` subcommand and follow the interactive prompts.
-
+### 2. Generate a Configuration
+Launch the interactive wizard to create a file:
 ```sh
-scaffoldr backup create-autorestic
+scaffoldr backup borgmatic generate
 ```
 
-This will launch an interactive wizard that asks for location, backend, and other necessary details, and then generates a complete `autorestic.yaml` file for you.
+### 3. Quick Scaffolding with Autorestic
+```sh
+scaffoldr backup autorestic generate
+```
+
+## Contributing
+
+Scaffoldr is designed to be highly extensible. To add a new tool or category, simply add a YAML definition and a Jinja2 template to the `definitions/` directory. No code changes required!
 
 ## License
 

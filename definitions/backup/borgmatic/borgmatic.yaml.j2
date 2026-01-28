@@ -8,6 +8,7 @@ location:
 
     repositories:
         - {{ repository_path }}
+
 {%- if exclude_patterns %}
 
     exclude_patterns:
@@ -15,6 +16,7 @@ location:
         - '{{ pattern }}'
     {%- endfor %}
 {%- endif %}
+
 {%- if remote_path %}
 
     remote_path: {{ remote_path }}
@@ -43,11 +45,11 @@ retention:
 
 consistency:
     checks:
-{%- if consistency_checks and 'none' not in consistency_checks -%}
+{%- if consistency_checks and 'none' not in consistency_checks %}
     {%- for check in consistency_checks %}
         - {{ check }}
-    {%- endfor -%}
-{%- else -%}
+    {%- endfor %}
+{%- else %}
         []
 {%- endif %}
 
