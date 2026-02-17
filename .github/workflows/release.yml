@@ -15,7 +15,7 @@ jobs:
           - os: ubuntu-22.04
             arch: x86_64
             name: scaffoldr-linux-x86_64
-          - os: ubuntu-22.04
+          - os: ubuntu-22.04-arm
             arch: arm64
             name: scaffoldr-linux-arm64
 
@@ -27,12 +27,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Set up QEMU
-        if: matrix.arch == 'arm64'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
 
       - name: Install dependencies
         run: |
