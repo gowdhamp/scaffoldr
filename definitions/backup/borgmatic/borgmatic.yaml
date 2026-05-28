@@ -24,9 +24,13 @@ heading:
           prompt: "Repository URI"
           description: "The path or URI where backups will be stored (e.g., /mnt/backup or ssh://user@host/./repo)."
           required: true
+        - key: repository_label
+          prompt: "Repository label"
+          description: "A short identifier for this repository used in logs and notifications (e.g., 'remote' or 'local-hdd')."
+          default: "{{ backup_name }}"
         - key: remote_path
           prompt: "Remote Borg path"
-          description: "Path to the borg executable on the remote server."
+          description: "Path to the borg executable on the remote server. Leave as 'borg' for default."
           default: "borg"
         - key: encryption_passphrase
           prompt: "Repository passphrase"

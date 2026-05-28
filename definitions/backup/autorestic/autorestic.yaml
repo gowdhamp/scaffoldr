@@ -40,11 +40,11 @@ heading:
         - key: backend_type
           prompt: "Backend type"
           description: "The storage provider to use."
-          choices: ["s3", "local", "azure", "gs"]
+          choices: ["s3", "b2", "local", "sftp", "azure", "gs"]
           default: "s3"
         - key: backend_path
           prompt: "Repository path"
-          description: "The target destination (e.g., '/mnt/backup' or 'my-bucket/folder')."
+          description: "The target destination. S3: 's3.amazonaws.com/bucket'. B2: 'bucket:folder'. SFTP: 'sftp:user@host:/path'. Local: '/mnt/backup'."
         - key: backend_env_aws_access_key_id
           prompt: "AWS Access Key ID"
           description: "Required for S3 backend."
@@ -58,18 +58,36 @@ heading:
           depends_on:
             key: backend_type
             value: "s3"
+        - key: backend_env_b2_account_id
+          prompt: "B2 Account ID"
+          description: "Backblaze B2 account or application key ID."
+          depends_on:
+            key: backend_type
+            value: "b2"
+        - key: backend_env_b2_account_key
+          prompt: "B2 Account Key"
+          description: "Backblaze B2 application key."
+          is_password: true
+          depends_on:
+            key: backend_type
+            value: "b2"
         - key: backend_key
           prompt: "Encryption key"
           description: "Passphrase for Restic repository encryption."
           is_password: true
 
     - title: "Retention Strategy (Forget)"
-      subtitle: "Define how many snapshots to keep for this location (optional)."
+      subtitle: "Define how many snapshots to keep. Autorestic will automatically forget old snapshots after each backup."
       prompts:
+        - key: forget_trigger
+          prompt: "Auto-forget mode"
+          description: "'prune' removes old snapshots and frees disk space after every backup. 'yes' marks them as forgotten but does not reclaim space immediately."
+          choices: ["prune", "yes"]
+          default: "prune"
         - key: forget_keep_last
           prompt: "Keep last X snapshots"
-          description: "Number of most recent snapshots to keep."
-          default: '10'
+          description: "Number of most recent snapshots to always keep."
+          default: '5'
         - key: forget_keep_daily
           prompt: "Keep daily"
           description: "Number of daily snapshots to keep."
@@ -82,6 +100,10 @@ heading:
           prompt: "Keep monthly"
           description: "Number of monthly snapshots to keep."
           default: '6'
+        - key: forget_keep_yearly
+          prompt: "Keep yearly"
+          description: "Number of yearly snapshots to keep (0 to disable)."
+          default: '1'
 
   after:
     logs:
