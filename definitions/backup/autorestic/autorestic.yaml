@@ -76,6 +76,13 @@ heading:
           description: "Passphrase for Restic repository encryption."
           is_password: true
 
+    - title: "Monitoring"
+      prompts:
+        - key: healthcheck_url
+          prompt: "Healthcheck URL (optional)"
+          description: "Ping URL to signal backup status (e.g. https://hc-ping.com/<uuid> or https://uptime.example.com/api/push/<token>). Leave blank to skip."
+          required: false
+
     - title: "Retention Strategy (Forget)"
       subtitle: "Define how many snapshots to keep. Autorestic will automatically forget old snapshots after each backup."
       prompts:

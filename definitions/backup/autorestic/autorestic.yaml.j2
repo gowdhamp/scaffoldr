@@ -29,15 +29,24 @@ locations:
 {%- if hook_before %}
         - "{{ hook_before }}"
 {%- endif %}
+{%- if healthcheck_url %}
+        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/start"
+{%- endif %}
       success:
         - echo "Completed '{{ location_name }}' backup."
 {%- if hook_success %}
         - "{{ hook_success }}"
 {%- endif %}
+{%- if healthcheck_url %}
+        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}"
+{%- endif %}
       failure:
         - echo "Failed '{{ location_name }}' backup."
 {%- if hook_failure %}
         - "{{ hook_failure }}"
+{%- endif %}
+{%- if healthcheck_url %}
+        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/fail"
 {%- endif %}
 
     options:

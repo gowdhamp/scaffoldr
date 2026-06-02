@@ -47,9 +47,18 @@ checks:
 hooks:
     before_backup:
         - echo "Starting backup for '{{ backup_name }}'..."
+{%- if healthcheck_url %}
+        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/start"
+{%- endif %}
 
     after_backup:
         - echo "Backup for '{{ backup_name }}' complete."
+{%- if healthcheck_url %}
+        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}"
+{%- endif %}
 
     on_error:
         - echo "An error occurred during the '{{ backup_name }}' backup."
+{%- if healthcheck_url %}
+        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/fail"
+{%- endif %}

@@ -77,6 +77,13 @@ heading:
           description: "Comma-separated list of checks (repository, archives, data)."
           default: "repository,archives"
           is_list: true
+
+    - title: "Monitoring"
+      prompts:
+        - key: healthcheck_url
+          prompt: "Healthcheck URL (optional)"
+          description: "Ping URL to signal backup status (e.g. https://hc-ping.com/<uuid> or https://uptime.example.com/api/push/<token>). Leave blank to skip."
+          required: false
   after:
     logs:
       success: "Borgmatic configuration successfully generated at {output_path}"
