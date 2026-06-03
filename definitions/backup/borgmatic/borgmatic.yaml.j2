@@ -5,6 +5,9 @@
 
 source_directories:
     - {{ source_directory }}
+{%- if db_type and db_type != 'none' %}
+    - {{ dump_path }}
+{%- endif %}
 
 repositories:
     - path: {{ repository_path }}
@@ -47,6 +50,20 @@ checks:
 hooks:
     before_backup:
         - echo "Starting backup for '{{ backup_name }}'..."
+{%- if db_type and db_type != 'none' %}
+        - mkdir -p {{ dump_path }}
+{%- if db_type == 'mysql' %}
+        - mysqldump -h {{ db_host }} -P {{ db_port if db_port else '3306' }} -u {{ db_user }} -p'{{ db_password }}' {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+{%- elif db_type == 'postgres' %}
+        - PGPASSWORD='{{ db_password }}' pg_dump -h {{ db_host }} -p {{ db_port if db_port else '5432' }} -U {{ db_user }} {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+{%- elif db_type == 'wordpress' %}
+        - wp db export {{ dump_path }}/{{ db_name }}-$(date +%F).sql --allow-root --path=/var/www/html && gzip -f {{ dump_path }}/{{ db_name }}-$(date +%F).sql
+{%- elif db_type == 'docker-mysql' %}
+        - docker exec {{ docker_container_name }} mysqldump -u {{ db_user }} -p'{{ db_password }}' {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+{%- elif db_type == 'docker-postgres' %}
+        - docker exec {{ docker_container_name }} pg_dump -U {{ db_user }} {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+{%- endif %}
+{%- endif %}
 {%- if healthcheck_url %}
         - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/start"
 {%- endif %}

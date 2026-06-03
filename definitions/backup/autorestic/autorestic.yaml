@@ -30,6 +30,60 @@ heading:
           prompt: "Failure command"
           description: "Command to run if the backup fails."
 
+    - title: "Database Backup"
+      subtitle: "Optional: dump a database to disk before the backup runs so the dump is captured in the same snapshot."
+      prompts:
+        - key: db_type
+          prompt: "Database type"
+          description: "Type of database to dump before backup. Choose 'none' to skip."
+          choices: ["none", "mysql", "postgres", "wordpress", "docker-mysql", "docker-postgres"]
+          default: "none"
+        - key: db_name
+          prompt: "Database name"
+          description: "Name of the database to dump."
+          depends_on:
+            key: db_type
+            value: ["mysql", "postgres", "wordpress", "docker-mysql", "docker-postgres"]
+        - key: db_host
+          prompt: "DB host"
+          description: "Database server hostname or IP."
+          default: "localhost"
+          depends_on:
+            key: db_type
+            value: ["mysql", "postgres"]
+        - key: db_port
+          prompt: "DB port"
+          description: "Database server port (leave blank for default: 3306 MySQL / 5432 PostgreSQL)."
+          depends_on:
+            key: db_type
+            value: ["mysql", "postgres"]
+        - key: db_user
+          prompt: "DB user"
+          description: "Database user to authenticate with."
+          depends_on:
+            key: db_type
+            value: ["mysql", "postgres", "docker-mysql", "docker-postgres"]
+        - key: db_password
+          prompt: "DB password"
+          description: "Database password."
+          is_password: true
+          depends_on:
+            key: db_type
+            value: ["mysql", "postgres", "docker-mysql", "docker-postgres"]
+        - key: docker_container_name
+          prompt: "Docker container name"
+          description: "Name of the running Docker container to exec into."
+          depends_on:
+            key: db_type
+            value: ["docker-mysql", "docker-postgres"]
+        - key: dump_path
+          prompt: "Dump output path"
+          description: "Directory where the database dump file will be saved."
+          default: "/var/backups/db"
+          depends_on:
+            key: db_type
+            value: ["mysql", "postgres", "wordpress", "docker-mysql", "docker-postgres"]
+
     - title: "Backend Storage"
       subtitle: "Configure where your backups will be physically stored."
       prompts:

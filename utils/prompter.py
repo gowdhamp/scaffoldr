@@ -59,8 +59,11 @@ def prompt_for_config(heading: Dict[str, Any], global_defaults: Optional[Dict[st
         for p in section.get("prompts", []):
             # Check dependency logic (skip if criteria not met)
             dep = p.get("depends_on")
-            if dep and config.get(dep.get("key")) != dep.get("value"):
-                continue
+            if dep:
+                dep_val = dep.get("value")
+                dep_vals = dep_val if isinstance(dep_val, list) else [dep_val]
+                if config.get(dep.get("key")) not in dep_vals:
+                    continue
 
             config[p['key']] = _get_input(p, config, defaults)
 
