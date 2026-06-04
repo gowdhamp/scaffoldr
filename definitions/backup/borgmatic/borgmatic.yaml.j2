@@ -5,9 +5,6 @@
 
 source_directories:
     - {{ source_directory }}
-{%- if db_type and db_type != 'none' %}
-    - {{ dump_path }}
-{%- endif %}
 
 repositories:
     - path: {{ repository_path }}
@@ -47,35 +44,39 @@ checks:
     []
 {%- endif %}
 
-hooks:
-    before_backup:
-        - echo "Starting backup for '{{ backup_name }}'..."
+before_backup:
+    - echo "Starting backup for '{{ backup_name }}'..."
 {%- if db_type and db_type != 'none' %}
-        - mkdir -p {{ dump_path }}
+{%- if db_type in ['mysql', 'wordpress', 'docker-mysql'] %}
+    - mkdir -p {{ source_directory }}/mysqlbackup
 {%- if db_type == 'mysql' %}
-        - mysqldump -h {{ db_host }} -P {{ db_port if db_port else '3306' }} -u {{ db_user }} -p'{{ db_password }}' {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
-{%- elif db_type == 'postgres' %}
-        - PGPASSWORD='{{ db_password }}' pg_dump -h {{ db_host }} -p {{ db_port if db_port else '5432' }} -U {{ db_user }} {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+    - mysqldump -h {{ db_host }} -P {{ db_port if db_port else '3306' }} -u {{ db_user }} -p'{{ db_password }}' {{ db_name }} | gzip > {{ source_directory }}/mysqlbackup/{{ db_name }}.sql.gz
 {%- elif db_type == 'wordpress' %}
-        - wp db export {{ dump_path }}/{{ db_name }}-$(date +%F).sql --allow-root --path=/var/www/html && gzip -f {{ dump_path }}/{{ db_name }}-$(date +%F).sql
+    - wp db export {{ source_directory }}/mysqlbackup/{{ db_name }}.sql --allow-root --path=/var/www/html && gzip -f {{ source_directory }}/mysqlbackup/{{ db_name }}.sql
 {%- elif db_type == 'docker-mysql' %}
-        - docker exec {{ docker_container_name }} mysqldump -u {{ db_user }} -p'{{ db_password }}' {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+    - docker exec {{ docker_container_name }} mysqldump -u {{ db_user }} -p'{{ db_password }}' {{ db_name }} | gzip > {{ source_directory }}/mysqlbackup/{{ db_name }}.sql.gz
+{%- endif %}
+{%- elif db_type in ['postgres', 'docker-postgres'] %}
+    - mkdir -p {{ source_directory }}/pgbackup
+{%- if db_type == 'postgres' %}
+    - PGPASSWORD='{{ db_password }}' pg_dump -h {{ db_host }} -p {{ db_port if db_port else '5432' }} -U {{ db_user }} {{ db_name }} | gzip > {{ source_directory }}/pgbackup/{{ db_name }}.sql.gz
 {%- elif db_type == 'docker-postgres' %}
-        - docker exec {{ docker_container_name }} pg_dump -U {{ db_user }} {{ db_name }} | gzip > {{ dump_path }}/{{ db_name }}-$(date +%F).sql.gz
+    - docker exec {{ docker_container_name }} pg_dump -U {{ db_user }} {{ db_name }} | gzip > {{ source_directory }}/pgbackup/{{ db_name }}.sql.gz
 {%- endif %}
 {%- endif %}
-{%- if healthcheck_url %}
-        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/start"
 {%- endif %}
 
-    after_backup:
-        - echo "Backup for '{{ backup_name }}' complete."
-{%- if healthcheck_url %}
-        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}"
-{%- endif %}
+after_backup:
+    - echo "Backup for '{{ backup_name }}' complete."
 
-    on_error:
-        - echo "An error occurred during the '{{ backup_name }}' backup."
+on_error:
+    - echo "An error occurred during the '{{ backup_name }}' backup."
 {%- if healthcheck_url %}
-        - curl -fsS -m 10 --retry 5 -o /dev/null "{{ healthcheck_url }}/fail"
+
+healthchecks:
+    ping_url: {{ healthcheck_url }}
+    states:
+        - start
+        - finish
+        - fail
 {%- endif %}

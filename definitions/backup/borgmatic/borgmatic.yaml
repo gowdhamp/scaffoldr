@@ -124,23 +124,15 @@ heading:
           depends_on:
             key: db_type
             value: ["docker-mysql", "docker-postgres"]
-        - key: dump_path
-          prompt: "Dump output path"
-          description: "Directory where the database dump file will be saved."
-          default: "/var/backups/db"
-          depends_on:
-            key: db_type
-            value: ["mysql", "postgres", "wordpress", "docker-mysql", "docker-postgres"]
-
     - title: "Monitoring"
       prompts:
         - key: healthcheck_url
-          prompt: "Healthcheck URL (optional)"
-          description: "Ping URL to signal backup status (e.g. https://hc-ping.com/<uuid> or https://uptime.example.com/api/push/<token>). Leave blank to skip."
+          prompt: "Healthchecks ping URL (optional)"
+          description: "Base ping URL for borgmatic's native healthchecks integration (e.g. https://hc-ping.com/<uuid>). borgmatic will ping start/finish/fail automatically. Leave blank to skip."
           required: false
   after:
     logs:
       success: "Borgmatic configuration successfully generated at {output_path}"
       error: "Failed to generate configuration: {e}"
     notes:
-      - "Action required: Initialize the Borg repository before running the first backup.\nExample: borg init {encryption_arg} --remote-path={remote_path} {repository_path}"
+      - "Action required: Initialize the Borg repository before running the first backup.\nRun: borgmatic rcreate -e repokey\n(Use '-e none' if you did not set a passphrase. Use '-e repokey-blake2' for faster encryption.)"
