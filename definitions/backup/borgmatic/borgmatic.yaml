@@ -135,4 +135,4 @@ heading:
       success: "Borgmatic configuration successfully generated at {output_path}"
       error: "Failed to generate configuration: {e}"
     notes:
-      - "Action required: Initialize the Borg repository before running the first backup.\nRun: borgmatic rcreate -e repokey\n(Use '-e none' if you did not set a passphrase. Use '-e repokey-blake2' for faster encryption.)"
+      - "Action required: Initialize the Borg repository before running the first backup.\nRun: borgmatic rcreate -e repokey -c borgmatic.yaml\n(Use '-e none' if you did not set a passphrase. Use '-e repokey-blake2' for faster encryption.)"

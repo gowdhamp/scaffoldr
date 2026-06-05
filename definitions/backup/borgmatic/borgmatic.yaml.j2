@@ -9,11 +9,8 @@ source_directories:
 repositories:
     - path: {{ repository_path }}
       label: {{ repository_label if repository_label else backup_name }}
-{%- if remote_path and remote_path != 'borg' %}
-      remote_path: {{ remote_path }}
-{%- endif %}
-
 {%- if exclude_patterns %}
+
 exclude_patterns:
 {%- for pattern in exclude_patterns %}
     - '{{ pattern }}'
@@ -21,11 +18,21 @@ exclude_patterns:
 
 {%- endif %}
 {%- if encryption_passphrase %}
+
 encryption_passphrase: '{{ encryption_passphrase }}'
 
 {%- endif %}
 {%- set archive_prefix = archive_name_format if archive_name_format else backup_name %}
+{%- if remote_path and remote_path != 'borg' %}
+
+remote_path: {{ remote_path }}
 archive_name_format: '{{ archive_prefix }}-{now:%Y-%m-%dT%H:%M:%S}'
+
+{%- else %}
+
+archive_name_format: '{{ archive_prefix }}-{now:%Y-%m-%dT%H:%M:%S}'
+
+{%- endif %}
 
 keep_daily: {{ retention_daily }}
 keep_weekly: {{ retention_weekly }}
