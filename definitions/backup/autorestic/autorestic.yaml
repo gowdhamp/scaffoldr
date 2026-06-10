@@ -76,14 +76,6 @@ heading:
           depends_on:
             key: db_type
             value: ["docker-mysql", "docker-postgres"]
-        - key: dump_path
-          prompt: "Dump output path"
-          description: "Directory where the database dump file will be saved."
-          default: "/var/backups/db"
-          depends_on:
-            key: db_type
-            value: ["mysql", "postgres", "wordpress", "docker-mysql", "docker-postgres"]
-
     - title: "Backend Storage"
       subtitle: "Configure where your backups will be physically stored."
       prompts:

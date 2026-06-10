@@ -13,7 +13,7 @@ from core import discovery
 
 # --- Meta-data ---
 APP_NAME = "Scaffoldr"
-VERSION = "1.3.2"
+VERSION = "1.3.3"
 
 # --- Globals ---
 console = Console()
