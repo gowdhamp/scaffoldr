@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from jinja2 import Environment
 from rich.console import Console
 from rich.prompt import Prompt

@@ -1,5 +1,3 @@
-import os
-import pytest
 from core.discovery import discover_tools
 
 def test_discover_tools(tmp_path):

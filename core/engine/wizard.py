@@ -3,7 +3,6 @@ from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 from rich.console import Console
 from rich.prompt import Prompt
-from typer import Exit
 from utils.loaders import load_yaml
 from utils.config import get_tool_defaults
 from utils.prompter import prompt_for_config

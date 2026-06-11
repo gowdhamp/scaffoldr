@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from .loaders import load_toml
 
 def get_global_config() -> Dict[str, Any]:
