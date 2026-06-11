@@ -1,0 +1,23 @@
+# Filename: .github/workflows/ruff.yaml
+
+name: Ruff
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    name: Run Ruff Check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: astral-sh/ruff-action@v4
