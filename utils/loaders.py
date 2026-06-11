@@ -6,13 +6,14 @@ from rich.console import Console
 
 console = Console()
 
+
 def load_yaml(file_path: str) -> Dict[str, Any]:
     """
     Loads a YAML file with error handling.
-    
+
     Args:
         file_path: Absolute path to the YAML file.
-        
+
     Returns:
         Dictionary of data or empty dict if error.
     """
@@ -27,13 +28,14 @@ def load_yaml(file_path: str) -> Dict[str, Any]:
         console.print(f"[red]Unexpected error loading YAML: {e}[/red]")
     return {}
 
+
 def load_toml(file_path: str) -> Dict[str, Any]:
     """
     Loads a TOML file with error handling.
-    
+
     Args:
         file_path: path to the TOML file.
-        
+
     Returns:
         Dictionary of data or empty dict if error.
     """

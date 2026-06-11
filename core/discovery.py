@@ -5,13 +5,14 @@ from core.engine import run_config_flow, get_resource_path, list_config_fields
 
 # TODO: Add caching for discovered tools if configuration directory becomes very large.
 
+
 def discover_tools() -> Dict[str, List[str]]:
     """
     Scans the definitions directory and returns a mapping of categories to tools.
-    
+
     Expected directory structure:
     definitions/<category>/<tool>/<tool>.yaml
-    
+
     Returns:
         A dictionary where keys are category names and values are lists of tool names.
     """
@@ -32,15 +33,16 @@ def discover_tools() -> Dict[str, List[str]]:
         for tool in os.listdir(category_path):
             tool_path = os.path.join(category_path, tool)
             definition_file = os.path.join(tool_path, f"{tool}.yaml")
-            
+
             # A tool is valid if it contains its definition YAML
             if os.path.isdir(tool_path) and os.path.exists(definition_file):
                 tools.append(tool)
-        
+
         if tools:
             mapping[category] = sorted(tools)
 
     return mapping
+
 
 def _register_tool_commands(category_app: Typer, tool_name: str):
     """
@@ -60,7 +62,7 @@ def _register_tool_commands(category_app: Typer, tool_name: str):
     def generate():
         """Interactively generate a configuration file."""
         run_config_flow(tool_name, f"{tool_name}.yaml")
-    
+
     # Subcommand: list
     def list_fields():
         """List all configuration fields and global defaults."""
@@ -71,6 +73,7 @@ def _register_tool_commands(category_app: Typer, tool_name: str):
 
     category_app.add_typer(tool_app, name=tool_name)
 
+
 def register_dynamic_commands(app: Typer):
     """
     Dynamically builds the CLI command hierarchy based on tool definitions.
@@ -80,11 +83,10 @@ def register_dynamic_commands(app: Typer):
     for category, tools in sorted(tool_mapping.items()):
         # Each category gets its own Typer sub-app
         category_app = Typer(
-            help=f"Scaffolding for {category} tools.",
-            no_args_is_help=True
+            help=f"Scaffolding for {category} tools.", no_args_is_help=True
         )
 
         for tool in tools:
             _register_tool_commands(category_app, tool)
-        
+
         app.add_typer(category_app, name=category)

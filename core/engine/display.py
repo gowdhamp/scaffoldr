@@ -6,6 +6,7 @@ from .paths import get_tool_definition_path
 
 console = Console()
 
+
 def list_config_fields(tool_name: str):
     """
     Displays a formatted table of all configuration fields for a given tool.
@@ -29,7 +30,7 @@ def list_config_fields(tool_name: str):
         title = section.get("title", "Other")
         # Section header
         table.add_row(f"[bold yellow]{title}[/bold yellow]", end_section=True)
-        
+
         for p in section.get("prompts", []):
             field = p.get("key", "N/A")
             val = str(tool_defaults.get(field, "None"))
