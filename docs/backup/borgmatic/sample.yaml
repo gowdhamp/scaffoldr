@@ -1,0 +1,107 @@
+# Production borgmatic configuration — example.com
+# Compatible with borgmatic 1.8+
+#
+# Prerequisites:
+#   1. Install: apt install borgmatic
+#   2. Initialise: borgmatic rcreate -e repokey -c /etc/borgmatic/config.yaml
+#   3. Schedule: cron or systemd timer (see docs/backup/borgmatic/README.md)
+
+# ---------------------------------------------------------------------------
+# Source
+# ---------------------------------------------------------------------------
+
+source_directories:
+    - /srv/example.com          # Application files
+    - /etc/nginx                # Web server config
+    - /etc/letsencrypt          # SSL certificates
+
+repositories:
+    - path: ssh://user@fm2689.rsync.net/./backups/example.com
+      label: rsync-net
+
+exclude_patterns:
+    - '*.log'
+    - '*.tmp'
+    - 'node_modules/'
+    - '.git/'
+    - 'cache/'
+    - 'tmp/'
+
+# ---------------------------------------------------------------------------
+# Encryption
+# Passphrase must be stored in a password manager — not in version control.
+# ---------------------------------------------------------------------------
+
+encryption_passphrase: 'replace-with-a-strong-unique-passphrase'
+
+# ---------------------------------------------------------------------------
+# Remote Borg binary path (only needed if remote borg is not in $PATH as 'borg')
+# rsync.net provides borg1 (BorgBackup 1.x) and borg2 (BorgBackup 2.x)
+# ---------------------------------------------------------------------------
+
+remote_path: borg1
+archive_name_format: 'example.com-{now:%Y-%m-%dT%H:%M:%S}'
+
+# ---------------------------------------------------------------------------
+# Retention
+# Adjust based on your RPO/RTO and compliance requirements.
+# ---------------------------------------------------------------------------
+
+keep_daily: 7
+keep_weekly: 4
+keep_monthly: 6
+keep_yearly: 1
+
+# ---------------------------------------------------------------------------
+# Integrity checks
+# repository: fast, run every time
+# archives: slower, run weekly
+# data: full verify, run monthly (compliance audits)
+# ---------------------------------------------------------------------------
+
+checks:
+    - name: repository
+    - name: archives
+      frequency: 1 week
+    - name: data
+      frequency: 1 month
+
+# ---------------------------------------------------------------------------
+# Database backup
+#
+# The database is exported to a file inside source_directory BEFORE the
+# snapshot runs. This ensures:
+#   - A consistent, non-corrupt dump is captured
+#   - The dump is deduplicated with each backup
+#   - The dump can be restored independently of Borg if needed
+#
+# The pgbackup/ directory is inside /srv/example.com so it is automatically
+# included in source_directories above — no extra path needed.
+# ---------------------------------------------------------------------------
+
+before_backup:
+    - echo "Starting backup for 'example.com'..."
+    - mkdir -p /srv/example.com/pgbackup
+    - PGPASSWORD='db-secret' pg_dump -h localhost -p 5432 -U backup_user appdb | gzip > /srv/example.com/pgbackup/appdb.sql.gz
+
+after_backup:
+    - echo "Backup for 'example.com' complete."
+
+on_error:
+    - echo "Backup failed for 'example.com'."
+    # Optional: send an email alert
+    # - echo "Borgmatic failed on $(hostname)" | mail -s "Backup Failure" ops@example.com
+
+# ---------------------------------------------------------------------------
+# Monitoring — healthchecks.io (or self-hosted Healthchecks)
+#
+# borgmatic pings /start at the beginning, /finish on success, /fail on error.
+# A missed ping after the grace period triggers an alert.
+# ---------------------------------------------------------------------------
+
+healthchecks:
+    ping_url: https://hc-ping.com/your-uuid-here
+    states:
+        - start
+        - finish
+        - fail
