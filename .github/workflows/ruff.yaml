@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Ruff
         run: |
-          pip install ruff
+          pip install "ruff==0.16.4"
           ruff --version
 
       - name: Ruff — lint check

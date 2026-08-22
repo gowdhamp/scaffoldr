@@ -1,11 +1,14 @@
 import os
 from datetime import datetime
+
 from jinja2 import Environment, FileSystemLoader
 from rich.console import Console
 from rich.prompt import Prompt
-from utils.loaders import load_yaml
+
 from utils.config import get_tool_defaults
+from utils.loaders import load_yaml
 from utils.prompter import prompt_for_config
+
 from .paths import get_tool_definition_path
 
 console = Console()
@@ -13,16 +16,15 @@ console = Console()
 
 def _save_config(p: str, content: str) -> bool:
     """Handles file saving with overwrite confirmation."""
-    if os.path.exists(p):
-        if (
-            Prompt.ask(
-                f"[red]File '{p}' exists. Overwrite?[/red]",
-                choices=["y", "n"],
-                default="n",
-            )
-            != "y"
-        ):
-            return False
+    if os.path.exists(p) and (
+        Prompt.ask(
+            f"[red]File '{p}' exists. Overwrite?[/red]",
+            choices=["y", "n"],
+            default="n",
+        )
+        != "y"
+    ):
+        return False
     with open(p, "w") as f:
         f.write(content)
     return True
@@ -49,7 +51,9 @@ def run_config_flow(tool_name: str, default_filename: str):
     # Add context & tool-specific logic (e.g. borgmatic encryption)
     config.update(
         {
-            "generation_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "generation_timestamp": datetime.now()
+            .astimezone()
+            .strftime("%Y-%m-%d %H:%M:%S"),
             "output_path": output,
         }
     )

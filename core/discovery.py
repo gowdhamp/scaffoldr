@@ -1,12 +1,13 @@
 import os
-from typing import Dict, List
-from typer import Typer, Context
-from core.engine import run_config_flow, get_resource_path, list_config_fields
+
+from typer import Context, Typer
+
+from core.engine import get_resource_path, list_config_fields, run_config_flow
 
 # TODO: Add caching for discovered tools if configuration directory becomes very large.
 
 
-def discover_tools() -> Dict[str, List[str]]:
+def discover_tools() -> dict[str, list[str]]:
     """
     Scans the definitions directory and returns a mapping of categories to tools.
 
