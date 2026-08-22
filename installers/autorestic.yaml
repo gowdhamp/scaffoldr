@@ -1,0 +1,9 @@
+# Install metadata for `scaffoldr install autorestic`.
+# {version} is substituted with the release tag minus its `v` prefix.
+repo: cupcakearmy/autorestic
+tag_prefix: v
+binary_name: autorestic
+archive: bz2
+assets:
+  x86_64: "autorestic_{version}_linux_amd64.bz2"
+  arm64: "autorestic_{version}_linux_arm64.bz2"

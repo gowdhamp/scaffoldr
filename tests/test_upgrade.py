@@ -37,7 +37,7 @@ def test_not_frozen_skips_upgrade(monkeypatch, capsys):
 
 def test_already_on_target_version(frozen, monkeypatch, capsys):
     monkeypatch.setattr(
-        upgrade, "fetch_release", lambda v: _fake_release(f"v{upgrade.VERSION}")
+        upgrade, "fetch_release", lambda repo, v: _fake_release(f"v{upgrade.VERSION}")
     )
 
     upgrade.run_upgrade(None, dry_run=False)
@@ -47,7 +47,9 @@ def test_already_on_target_version(frozen, monkeypatch, capsys):
 
 
 def test_dry_run_previews_without_downloading(frozen, monkeypatch, capsys):
-    monkeypatch.setattr(upgrade, "fetch_release", lambda v: _fake_release("v9.9.9"))
+    monkeypatch.setattr(
+        upgrade, "fetch_release", lambda repo, v: _fake_release("v9.9.9")
+    )
     monkeypatch.setattr(
         upgrade, "_download", lambda url: pytest.fail("should not download")
     )
@@ -63,7 +65,9 @@ def test_dry_run_previews_without_downloading(frozen, monkeypatch, capsys):
 def test_upgrade_replaces_binary(frozen, monkeypatch, tmp_path, capsys):
     downloaded = tmp_path / "downloaded"
     downloaded.write_bytes(b"new-binary")
-    monkeypatch.setattr(upgrade, "fetch_release", lambda v: _fake_release("v9.9.9"))
+    monkeypatch.setattr(
+        upgrade, "fetch_release", lambda repo, v: _fake_release("v9.9.9")
+    )
     monkeypatch.setattr(upgrade, "_download", lambda url: str(downloaded))
 
     upgrade.run_upgrade(None, dry_run=False)
@@ -73,7 +77,7 @@ def test_upgrade_replaces_binary(frozen, monkeypatch, tmp_path, capsys):
 
 
 def test_missing_release_exits_nonzero(frozen, monkeypatch):
-    def _raise(_version):
+    def _raise(_repo, _version):
         raise upgrade.ReleaseLookupError("No release found for version '9.9.9'.")
 
     monkeypatch.setattr(upgrade, "fetch_release", _raise)

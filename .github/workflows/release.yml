@@ -36,7 +36,11 @@ jobs:
 
       - name: Build Scaffoldr 
         run: |
-          pyinstaller --onefile --name ${{ matrix.name }} --add-data "definitions$(python3 -c 'import os; print(os.pathsep)')definitions" main.py
+          SEP=$(python3 -c 'import os; print(os.pathsep)')
+          pyinstaller --onefile --name ${{ matrix.name }} \
+            --add-data "definitions${SEP}definitions" \
+            --add-data "installers${SEP}installers" \
+            main.py
 
       - name: Upload binary as artifact
         uses: actions/upload-artifact@v4

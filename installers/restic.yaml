@@ -1,0 +1,9 @@
+# Install metadata for `scaffoldr install restic`.
+# {version} is substituted with the release tag minus its `v` prefix.
+repo: restic/restic
+tag_prefix: v
+binary_name: restic
+archive: bz2
+assets:
+  x86_64: "restic_{version}_linux_amd64.bz2"
+  arm64: "restic_{version}_linux_arm64.bz2"

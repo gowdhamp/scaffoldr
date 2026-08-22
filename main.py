@@ -10,6 +10,7 @@ from rich.console import Console
 from typer import Context, Exit, Option, Typer
 
 from core import discovery
+from core.install import run_install
 from core.upgrade import run_upgrade
 from utils.version import APP_NAME, VERSION
 
@@ -66,6 +67,20 @@ def upgrade_command(
 ):
     """Download and install the latest (or a specific) Scaffoldr release binary."""
     run_upgrade(version, dry_run)
+
+
+@app.command(name="install")
+def install_command(
+    tool: str,
+    version: str | None = Option(
+        None,
+        "--version",
+        "-v",
+        help="Specific version to install (defaults to latest).",
+    ),
+):
+    """Download and install an upstream tool binary (e.g. borg, restic) to /usr/local/bin."""
+    run_install(tool, version)
 
 
 def register_cli_commands():

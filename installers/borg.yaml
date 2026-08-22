@@ -1,0 +1,10 @@
+# Install metadata for `scaffoldr install borg`.
+# Asset names are static per architecture (no {version} placeholder needed);
+# glibc build numbers only change on major borg releases and get bumped here then.
+repo: borgbackup/borg
+tag_prefix: ""
+binary_name: borg
+archive: raw
+assets:
+  x86_64: "borg-linux-glibc231-x86_64"
+  arm64: "borg-linux-glibc235-arm64-gh"

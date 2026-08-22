@@ -64,6 +64,25 @@ scaffoldr backup borgmatic generate --values base.yaml --yes
 
 Once any `--values`/`--set` is provided, fields left unset simply take their default instead of prompting — only a *required* field with no override and no default still falls back to an interactive prompt. With no flags at all, `generate` behaves exactly as before.
 
+### 📥 Installing the Tools Themselves
+
+Beyond generating configs, scaffoldr can fetch the actual upstream tool binaries (borg, restic, autorestic) from their own GitHub releases — no `apt`/`go install` needed:
+
+```sh
+# Install the latest release to /usr/local/bin
+scaffoldr install restic
+
+# Install (or downgrade to) a specific version
+scaffoldr install borg --version 1.4.5
+
+# Re-running with the same version is a no-op
+scaffoldr install restic
+```
+
+This downloads the release asset matching your architecture (Linux x86_64/arm64), extracts it if needed, and installs it with `chmod 755`. Requires write access to `/usr/local/bin` (use `sudo` if needed).
+
+*Note: `borgmatic` is pure Python and has no GitHub binary release — install it with `pip install borgmatic` instead.*
+
 ### 💾 Global Defaults
 
 You can set global defaults in `~/.scaffoldr` to avoid re-typing common values:

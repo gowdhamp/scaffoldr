@@ -1,35 +1,37 @@
-"""Minimal GitHub Releases API client used by the self-upgrade command."""
+"""Minimal GitHub Releases API client shared by self-upgrade and tool installation."""
 
 import json
 import urllib.error
 import urllib.request
 from typing import Any
 
-from utils.version import GITHUB_REPO
-
-API_BASE = f"https://api.github.com/repos/{GITHUB_REPO}/releases"
-USER_AGENT = "scaffoldr-upgrade"
+USER_AGENT = "scaffoldr-release-client"
 
 
 class ReleaseLookupError(Exception):
     """Raised when release metadata or a matching asset cannot be found."""
 
 
-def fetch_release(version: str | None) -> dict[str, Any]:
+def fetch_release(
+    repo: str, version: str | None, tag_prefix: str = "v"
+) -> dict[str, Any]:
     """
     Fetches release metadata from GitHub for the latest or a specific version.
 
     Args:
-        version: Semver tag without the 'v' prefix, or None for the latest release.
+        repo: GitHub repo as 'owner/name'.
+        version: Version string (with or without `tag_prefix`), or None for latest.
+        tag_prefix: Prefix release tags use (e.g. 'v' for 'v1.2.3', '' for borg's '1.2.3').
 
     Returns:
         Parsed JSON payload for the release.
     """
-    url = (
-        f"{API_BASE}/latest"
-        if not version
-        else f"{API_BASE}/tags/v{version.lstrip('v')}"
-    )
+    base = f"https://api.github.com/repos/{repo}/releases"
+    if version:
+        tag = tag_prefix + version.removeprefix(tag_prefix)
+        url = f"{base}/tags/{tag}"
+    else:
+        url = f"{base}/latest"
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
 
     try:
@@ -46,7 +48,7 @@ def fetch_release(version: str | None) -> dict[str, Any]:
 
 
 def pick_asset(release: dict[str, Any], asset_name: str) -> dict[str, Any]:
-    """Finds the release asset matching the current platform's binary name."""
+    """Finds the release asset matching the given filename."""
     for asset in release.get("assets", []):
         if asset.get("name") == asset_name:
             return asset
