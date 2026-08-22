@@ -1,9 +1,10 @@
 import os
-from typing import Dict, Any
+from typing import Any
+
 from .loaders import load_toml
 
 
-def get_global_config() -> Dict[str, Any]:
+def get_global_config() -> dict[str, Any]:
     """
     Loads global configuration from ~/.scaffoldr (TOML format).
 
@@ -14,7 +15,7 @@ def get_global_config() -> Dict[str, Any]:
     return load_toml(config_path)
 
 
-def get_tool_defaults(tool_name: str) -> Dict[str, Any]:
+def get_tool_defaults(tool_name: str) -> dict[str, Any]:
     """
     Retrieves the configuration section for a specific tool from the global config.
 

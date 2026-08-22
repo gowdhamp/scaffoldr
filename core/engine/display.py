@@ -1,7 +1,9 @@
 from rich.console import Console
 from rich.table import Table
-from utils.loaders import load_yaml
+
 from utils.config import get_tool_defaults
+from utils.loaders import load_yaml
+
 from .paths import get_tool_definition_path
 
 console = Console()

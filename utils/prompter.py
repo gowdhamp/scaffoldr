@@ -1,5 +1,6 @@
 import re
-from typing import Dict, Any, Optional
+from typing import Any
+
 from jinja2 import Environment
 from rich.console import Console
 from rich.prompt import Prompt
@@ -8,17 +9,17 @@ console = Console()
 jinja_env = Environment()
 
 
-def _render_val(val: Any, context: Dict[str, Any]) -> Any:
+def _render_val(val: Any, context: dict[str, Any]) -> Any:
     """Renders a value if it contains Jinja2 templates."""
     if isinstance(val, str) and "{{" in val:
         try:
             return jinja_env.from_string(val).render(context)
-        except Exception:
+        except Exception:  # noqa: BLE001 — template errors fall back to the raw value
             return val
     return val
 
 
-def _get_input(p: Dict[str, Any], ctx: Dict[str, Any], defaults: Dict[str, Any]) -> Any:
+def _get_input(p: dict[str, Any], ctx: dict[str, Any], defaults: dict[str, Any]) -> Any:
     """Handles the interactive prompt loop for a single configuration key."""
     key = p["key"]
     is_password = p.get("is_password", False)
@@ -50,8 +51,8 @@ def _get_input(p: Dict[str, Any], ctx: Dict[str, Any], defaults: Dict[str, Any])
 
 
 def prompt_for_config(
-    heading: Dict[str, Any], global_defaults: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    heading: dict[str, Any], global_defaults: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """
     Interactively prompts for configuration values based on a tool's definition.
     """

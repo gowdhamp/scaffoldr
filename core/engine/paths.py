@@ -15,7 +15,7 @@ def get_resource_path(relative_path: str) -> str:
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
-    except (AttributeError, Exception):
+    except AttributeError:
         # Fallback for development mode: navigate up from core/engine/
         base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 

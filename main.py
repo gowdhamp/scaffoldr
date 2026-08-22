@@ -6,9 +6,9 @@ Scaffoldr is a fast and simple CLI tool for instantly generating configuration
 files and boilerplates for your favorite DevOps and infrastructure tools.
 """
 
-from typing import Optional
-from typer import Typer, Exit, Option, Context
 from rich.console import Console
+from typer import Context, Exit, Option, Typer
+
 from core import discovery
 
 # --- Meta-data ---
@@ -39,7 +39,7 @@ def _version_callback(value: bool):
 @app.callback(invoke_without_command=True)
 def root_callback(
     ctx: Context,
-    version: Optional[bool] = Option(
+    version: bool | None = Option(
         None,
         "--version",
         "-v",
@@ -52,7 +52,6 @@ def root_callback(
     Welcome to Scaffoldr! Use the subcommands below to start scaffolding.
     """
     # no_args_is_help=True takes care of showing the help screen.
-    pass
 
 
 def register_cli_commands():
