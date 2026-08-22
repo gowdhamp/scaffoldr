@@ -10,10 +10,8 @@ from rich.console import Console
 from typer import Context, Exit, Option, Typer
 
 from core import discovery
-
-# --- Meta-data ---
-APP_NAME = "Scaffoldr"
-VERSION = "1.3.3"
+from core.upgrade import run_upgrade
+from utils.version import APP_NAME, VERSION
 
 # --- Globals ---
 console = Console()
@@ -52,6 +50,22 @@ def root_callback(
     Welcome to Scaffoldr! Use the subcommands below to start scaffolding.
     """
     # no_args_is_help=True takes care of showing the help screen.
+
+
+@app.command(name="upgrade")
+def upgrade_command(
+    version: str | None = Option(
+        None,
+        "--version",
+        "-v",
+        help="Specific version to install (defaults to latest).",
+    ),
+    dry_run: bool = Option(
+        False, "--dry-run", help="Show what would be installed without applying it."
+    ),
+):
+    """Download and install the latest (or a specific) Scaffoldr release binary."""
+    run_upgrade(version, dry_run)
 
 
 def register_cli_commands():
