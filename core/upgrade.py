@@ -10,7 +10,7 @@ import urllib.request
 from rich.console import Console
 
 from utils.github_release import ReleaseLookupError, fetch_release, pick_asset
-from utils.version import VERSION
+from utils.version import GITHUB_REPO, VERSION
 
 console = Console()
 
@@ -67,7 +67,7 @@ def run_upgrade(version: str | None, dry_run: bool) -> None:
     asset_name = _asset_name()
 
     try:
-        release = fetch_release(version)
+        release = fetch_release(GITHUB_REPO, version)
         target_version = release["tag_name"].lstrip("v")
 
         if target_version == VERSION:

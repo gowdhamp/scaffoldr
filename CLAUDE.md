@@ -19,7 +19,8 @@ pytest
 pytest tests/test_discovery.py
 
 # Build distributable binary (CI uses PyInstaller)
-pyinstaller --onefile --name scaffoldr-linux-x86_64 --add-data "definitions:definitions" main.py
+pyinstaller --onefile --name scaffoldr-linux-x86_64 \
+  --add-data "definitions:definitions" --add-data "installers:installers" main.py
 ```
 
 ## Architecture
@@ -67,15 +68,43 @@ heading:
 
 Global defaults from `~/.scaffoldr` (TOML, keyed by tool name) override YAML `default` values.
 
+### Non-interactive input
+
+`generate` also accepts `--values <file>` (YAML/TOML) and repeatable `--set key=value` (which wins over `--values`). Once either is used, unset optional fields silently take their default; a still-missing *required* field falls back to a prompt. `--yes` skips the overwrite confirmation.
+
+### Installers (data layer for `scaffoldr install`)
+
+Separate from `definitions/`, each file in `installers/<tool>.yaml` describes how to fetch a **third-party** tool's own prebuilt binary (not a scaffoldr-generated config) from its own GitHub releases:
+
+```yaml
+repo: owner/name        # upstream GitHub repo
+tag_prefix: "v"          # "" if release tags have no leading 'v' (e.g. borg)
+binary_name: tool-name   # filename of the executable inside a tar archive
+archive: raw             # raw | bz2 | tar.gz | tar.bz2
+assets:
+  x86_64: "asset-name-template-{version}"
+  arm64: "asset-name-template-{version}"
+```
+
+`scaffoldr install <tool> [-v/--version X]` resolves the release, downloads+extracts the matching asset, and installs it to `/usr/local/bin/<tool>`, skipping if a sidecar marker file shows that version is already installed.
+
 ### Core modules
 
 - `core/discovery.py` — scans `definitions/`, builds Typer CLI tree
-- `core/engine/wizard.py` — `run_config_flow()`: loads YAML, prompts user, renders Jinja2 template, saves file
+- `core/commands.py` — builds each tool's `generate`/`list` Typer sub-app
+- `core/engine/wizard.py` — `run_config_flow()`: loads YAML, resolves overrides, prompts user, renders Jinja2 template, saves file
 - `core/engine/display.py` — `list_config_fields()`: renders a Rich table of all fields and their defaults
 - `core/engine/paths.py` — `get_resource_path()`: resolves paths for both dev and PyInstaller (`sys._MEIPASS`) modes
-- `utils/prompter.py` — interactive prompt loop with validation (regex, required, choices, dependency logic)
+- `core/upgrade.py` — `run_upgrade()`: self-upgrade, downloads and replaces the running scaffoldr binary
+- `core/install.py` — `run_install()`: downloads, extracts, and installs a third-party tool binary
+- `utils/prompter.py` — prompt loop with validation (regex, required, choices, dependency logic, overrides)
+- `utils/overrides.py` — merges/validates `--values`/`--set` into an overrides dict
 - `utils/config.py` — reads `~/.scaffoldr` TOML for global defaults
 - `utils/loaders.py` — YAML and TOML loading helpers
+- `utils/version.py` — `APP_NAME`/`VERSION`/`GITHUB_REPO` constants
+- `utils/github_release.py` — minimal GitHub Releases API client (used by both upgrade and install)
+- `utils/tool_install.py` — installer YAML loading, arch detection, installed-version marker file
+- `utils/archive.py` — extracts a raw binary out of a downloaded `bz2`/`tar.gz`/`tar.bz2` asset
 
 ### Coding standards
 
@@ -85,4 +114,4 @@ Global defaults from `~/.scaffoldr` (TOML, keyed by tool name) override YAML `de
 
 ### Release
 
-Releases are triggered by pushing a `v*` tag. CI builds two native binaries (Linux x86_64 and ARM64) using PyInstaller and publishes them as GitHub Release assets. The `--add-data "definitions:definitions"` flag bundles the definitions directory into the binary.
+Releases are triggered by pushing a `v*` tag. CI builds two native binaries (Linux x86_64 and ARM64) using PyInstaller and publishes them as GitHub Release assets. The `--add-data` flags bundle both the `definitions/` and `installers/` directories into the binary.
