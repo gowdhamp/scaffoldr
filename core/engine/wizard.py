@@ -7,6 +7,7 @@ from rich.prompt import Prompt
 
 from utils.config import get_tool_defaults
 from utils.loaders import load_yaml
+from utils.overrides import build_overrides
 from utils.prompter import prompt_for_config
 
 from .paths import get_tool_definition_path
@@ -14,15 +15,19 @@ from .paths import get_tool_definition_path
 console = Console()
 
 
-def _save_config(p: str, content: str) -> bool:
+def _save_config(p: str, content: str, assume_yes: bool = False) -> bool:
     """Handles file saving with overwrite confirmation."""
-    if os.path.exists(p) and (
-        Prompt.ask(
-            f"[red]File '{p}' exists. Overwrite?[/red]",
-            choices=["y", "n"],
-            default="n",
+    if (
+        os.path.exists(p)
+        and not assume_yes
+        and (
+            Prompt.ask(
+                f"[red]File '{p}' exists. Overwrite?[/red]",
+                choices=["y", "n"],
+                default="n",
+            )
+            != "y"
         )
-        != "y"
     ):
         return False
     with open(p, "w") as f:
@@ -30,8 +35,14 @@ def _save_config(p: str, content: str) -> bool:
     return True
 
 
-def run_config_flow(tool_name: str, default_filename: str):
-    """Main interactive wizard for tool configuration."""
+def run_config_flow(
+    tool_name: str,
+    default_filename: str,
+    values_file: str | None = None,
+    set_overrides: list[str] | None = None,
+    assume_yes: bool = False,
+):
+    """Main wizard for tool configuration; prompts interactively unless --values/--set fill a field."""
     def_path = get_tool_definition_path(tool_name)
     if not def_path:
         console.print(f"[red]Error: Tool '{tool_name}' definition not found.[/red]")
@@ -41,12 +52,15 @@ def run_config_flow(tool_name: str, default_filename: str):
     heading = data.get("heading", {})
     console.print(f"\n[bold]{heading.get('title', 'Configuration Wizard')}[/bold]")
 
+    overrides = build_overrides(values_file, set_overrides or [])
     defaults = get_tool_defaults(tool_name)
-    config = prompt_for_config(heading, global_defaults=defaults)
+    config = prompt_for_config(heading, global_defaults=defaults, overrides=overrides)
     if not config:
         return
 
-    output = Prompt.ask("\nOutput file path", default=default_filename)
+    output = overrides.get("output_path") or Prompt.ask(
+        "\nOutput file path", default=default_filename
+    )
 
     # Add context & tool-specific logic (e.g. borgmatic encryption)
     config.update(
@@ -66,7 +80,7 @@ def run_config_flow(tool_name: str, default_filename: str):
     )
     rendered = env.get_template(f"{tool_name.lower()}.yaml.j2").render(**config)
 
-    if _save_config(output, rendered):
+    if _save_config(output, rendered, assume_yes=assume_yes):
         after = heading.get("after", {})
         console.print(
             f"\n[green]{after.get('logs', {}).get('success', 'File saved.').format(output_path=output)}[/green]"

@@ -5,6 +5,8 @@ from jinja2 import Environment
 from rich.console import Console
 from rich.prompt import Prompt
 
+from utils.overrides import apply_override, split_csv
+
 console = Console()
 jinja_env = Environment()
 
@@ -19,45 +21,63 @@ def _render_val(val: Any, context: dict[str, Any]) -> Any:
     return val
 
 
-def _get_input(p: dict[str, Any], ctx: dict[str, Any], defaults: dict[str, Any]) -> Any:
+def _get_input(
+    p: dict[str, Any],
+    ctx: dict[str, Any],
+    defaults: dict[str, Any],
+    overrides: dict[str, Any],
+    automated: bool,
+) -> Any:
     """Handles the interactive prompt loop for a single configuration key."""
     key = p["key"]
-    is_password = p.get("is_password", False)
-    is_list = p.get("is_list", False)
     required = p.get("required", False)
-    regex = p.get("regex")
+
+    if key in overrides:
+        accepted, value = apply_override(p, overrides[key])
+        if accepted:
+            return value
+        console.print(
+            f"[yellow]Override for '{key}' is invalid; falling back to a prompt.[/yellow]"
+        )
 
     # Global defaults (TOML) take precedence over definition defaults (YAML)
-    default = defaults.get(key, p.get("default"))
-    default = _render_val(default, ctx)
+    default = _render_val(defaults.get(key, p.get("default")), ctx)
+
+    if automated and not required:
+        # Non-interactive run: accept the field's own default without prompting.
+        return split_csv(default) if p.get("is_list") else default
 
     while True:
         value = Prompt.ask(
-            p["prompt"], default=default, password=is_password, choices=p.get("choices")
+            p["prompt"],
+            default=default,
+            password=p.get("is_password", False),
+            choices=p.get("choices"),
         )
 
         if required and not value:
             console.print("[red]This field is required.[/red]")
             continue
 
+        regex = p.get("regex")
         if regex and value and not re.match(regex, str(value)):
             console.print(f"[red]Input must match: {regex}[/red]")
             continue
         break
 
-    if is_list and isinstance(value, str):
-        return [i.strip() for i in value.split(",") if i.strip()]
-    return value
+    return split_csv(value) if p.get("is_list") else value
 
 
 def prompt_for_config(
-    heading: dict[str, Any], global_defaults: dict[str, Any] | None = None
+    heading: dict[str, Any],
+    global_defaults: dict[str, Any] | None = None,
+    overrides: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """
-    Interactively prompts for configuration values based on a tool's definition.
-    """
+    """Prompts for config values; missing fields prompt unless overrides make the run automated."""
     config = {}
     defaults = global_defaults or {}
+    overrides = overrides or {}
+    automated = bool(overrides)
 
     for section in heading.get("before", []):
         console.print(
@@ -75,6 +95,6 @@ def prompt_for_config(
                 if config.get(dep.get("key")) not in dep_vals:
                     continue
 
-            config[p["key"]] = _get_input(p, config, defaults)
+            config[p["key"]] = _get_input(p, config, defaults, overrides, automated)
 
     return config
