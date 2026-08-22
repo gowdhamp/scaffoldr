@@ -44,6 +44,26 @@ Every tool supports two main actions:
 
 *Note: Running just the tool name (e.g., `scaffoldr backup borgmatic`) defaults to the `list` action.*
 
+### 🤖 Non-Interactive Mode
+
+For CI pipelines, scripts, or automated provisioning, `generate` also accepts answers from flags instead of prompts:
+
+```sh
+# Pass a values file (YAML or TOML)
+scaffoldr backup borgmatic generate --values borgmatic-values.yaml
+
+# Override individual keys inline (repeatable)
+scaffoldr backup borgmatic generate --set backup_name=web --set source_directory=/srv/www
+
+# Mix both — inline --set values take precedence over the values file
+scaffoldr backup borgmatic generate --values base.yaml --set encryption_passphrase=secret
+
+# Skip the overwrite confirmation
+scaffoldr backup borgmatic generate --values base.yaml --yes
+```
+
+Once any `--values`/`--set` is provided, fields left unset simply take their default instead of prompting — only a *required* field with no override and no default still falls back to an interactive prompt. With no flags at all, `generate` behaves exactly as before.
+
 ### 💾 Global Defaults
 
 You can set global defaults in `~/.scaffoldr` to avoid re-typing common values:
